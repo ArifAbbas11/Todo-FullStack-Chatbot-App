@@ -21,6 +21,7 @@ class CreateTaskRequest(BaseModel):
     - Title maximum length: 500 characters
     - Description is optional
     - Description maximum length: 5000 characters
+    - AI enhancement fields are all optional
     """
     title: str = Field(
         ...,
@@ -34,6 +35,32 @@ class CreateTaskRequest(BaseModel):
         max_length=5000,
         description="Optional task description (max 5000 characters)",
         examples=["Milk, eggs, bread"]
+    )
+    due_date: Optional[datetime] = Field(
+        None,
+        description="Task deadline (optional)",
+        examples=["2026-02-01T17:00:00Z"]
+    )
+    priority: Optional[str] = Field(
+        None,
+        description="Priority: low, medium, high, urgent (optional)",
+        examples=["high"]
+    )
+    category: Optional[str] = Field(
+        None,
+        max_length=50,
+        description="Category: work, personal, shopping, health, etc. (optional)",
+        examples=["shopping"]
+    )
+    tags: Optional[List[str]] = Field(
+        None,
+        description="Array of tags (optional)",
+        examples=[["groceries", "weekly"]]
+    )
+    parent_task_id: Optional[UUID] = Field(
+        None,
+        description="Parent task ID for subtasks (optional)",
+        examples=["550e8400-e29b-41d4-a716-446655440000"]
     )
 
     @field_validator('title')
@@ -79,6 +106,7 @@ class UpdateTaskRequest(BaseModel):
     - Title maximum length: 500 characters
     - Description is optional
     - Description maximum length: 5000 characters
+    - AI enhancement fields are all optional
     """
     title: str = Field(
         ...,
@@ -92,6 +120,27 @@ class UpdateTaskRequest(BaseModel):
         max_length=5000,
         description="Updated task description (max 5000 characters)",
         examples=["Milk, eggs, bread, paper towels"]
+    )
+    due_date: Optional[datetime] = Field(
+        None,
+        description="Task deadline (optional)",
+        examples=["2026-02-01T17:00:00Z"]
+    )
+    priority: Optional[str] = Field(
+        None,
+        description="Priority: low, medium, high, urgent (optional)",
+        examples=["high"]
+    )
+    category: Optional[str] = Field(
+        None,
+        max_length=50,
+        description="Category: work, personal, shopping, health, etc. (optional)",
+        examples=["shopping"]
+    )
+    tags: Optional[List[str]] = Field(
+        None,
+        description="Array of tags (optional)",
+        examples=[["groceries", "weekly"]]
     )
 
     @field_validator('title')
@@ -160,6 +209,31 @@ class TaskData(BaseModel):
         ...,
         description="Completion status",
         examples=[False]
+    )
+    due_date: Optional[datetime] = Field(
+        None,
+        description="Task deadline",
+        examples=["2026-02-01T17:00:00Z"]
+    )
+    priority: Optional[str] = Field(
+        None,
+        description="Priority level",
+        examples=["high"]
+    )
+    category: Optional[str] = Field(
+        None,
+        description="Task category",
+        examples=["shopping"]
+    )
+    tags: Optional[List[str]] = Field(
+        None,
+        description="Task tags",
+        examples=[["groceries", "weekly"]]
+    )
+    parent_task_id: Optional[UUID] = Field(
+        None,
+        description="Parent task ID for subtasks",
+        examples=["550e8400-e29b-41d4-a716-446655440000"]
     )
     created_at: datetime = Field(
         ...,

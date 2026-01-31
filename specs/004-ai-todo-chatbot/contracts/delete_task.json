@@ -1,0 +1,47 @@
+{
+  "name": "delete_task",
+  "description": "Permanently delete a task. The task must belong to the authenticated user. This action cannot be undone.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "description": "UUID of the task to delete (required)"
+      }
+    },
+    "required": ["task_id"]
+  },
+  "returns": {
+    "type": "object",
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "description": "Whether the task was deleted successfully"
+      },
+      "message": {
+        "type": "string",
+        "description": "Human-readable confirmation or error message"
+      }
+    }
+  },
+  "examples": [
+    {
+      "input": {
+        "task_id": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "output": {
+        "success": true,
+        "message": "Task deleted successfully"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "condition": "Task ID not found or belongs to another user",
+      "response": {
+        "success": false,
+        "message": "Task not found"
+      }
+    }
+  ]
+}

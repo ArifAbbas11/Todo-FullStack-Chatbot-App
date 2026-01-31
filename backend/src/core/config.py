@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     # CORS Configuration
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
+    # Groq API Configuration
+    GROQ_API_KEY: Optional[str] = os.getenv("GROQ_API_KEY", None)
+
     # Server Configuration
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))

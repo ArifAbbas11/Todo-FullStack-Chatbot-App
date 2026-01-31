@@ -92,3 +92,29 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
         return payload
     except JWTError:
         return None
+
+
+def extract_user_id_from_token(token: str) -> Optional[str]:
+    """
+    Extract user_id from a JWT access token.
+
+    This is a convenience function for MCP tools and other components
+    that need to extract the user_id without loading the full user object.
+
+    Args:
+        token: JWT token string
+
+    Returns:
+        Optional[str]: User ID (UUID as string) if token is valid, None otherwise
+
+    Example:
+        user_id = extract_user_id_from_token(token)
+        if user_id:
+            # Use user_id for authorization
+            pass
+    """
+    payload = decode_access_token(token)
+    if payload:
+        # JWT standard: user ID is stored in "sub" (subject) claim
+        return payload.get("sub")
+    return None

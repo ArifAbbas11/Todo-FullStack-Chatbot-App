@@ -2,10 +2,10 @@
 Task model for todo items.
 Represents a single todo task belonging to a user.
 """
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Column, JSON
 from datetime import datetime
 from uuid import UUID, uuid4
-from typing import Optional
+from typing import Optional, List
 
 
 class Task(SQLModel, table=True):
@@ -46,6 +46,36 @@ class Task(SQLModel, table=True):
     is_completed: bool = Field(
         default=False,
         description="Completion status (default: false)"
+    )
+
+    # AI Enhancement Fields (all nullable for backward compatibility)
+    due_date: Optional[datetime] = Field(
+        default=None,
+        index=True,
+        description="Task deadline (nullable)"
+    )
+    priority: Optional[str] = Field(
+        default=None,
+        max_length=20,
+        index=True,
+        description="Priority: low, medium, high, urgent (nullable)"
+    )
+    category: Optional[str] = Field(
+        default=None,
+        max_length=50,
+        index=True,
+        description="Main category: work, personal, shopping, health, etc. (nullable)"
+    )
+    tags: Optional[List[str]] = Field(
+        default=None,
+        sa_column=Column(JSON),
+        description="Array of tags (nullable JSON)"
+    )
+    parent_task_id: Optional[UUID] = Field(
+        default=None,
+        foreign_key="tasks.id",
+        index=True,
+        description="Parent task ID for subtasks (nullable, self-referential)"
     )
 
     # Audit timestamps

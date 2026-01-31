@@ -13,6 +13,8 @@ import type {
   TaskResponse,
   TaskListResponse,
   ApiResponse,
+  ChatMessageRequest,
+  ChatMessageResponse,
 } from './types';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -211,6 +213,21 @@ export const tasksApi = {
   deleteTask: async (id: string): Promise<void> => {
     return apiFetch<void>(`/tasks/${id}`, {
       method: 'DELETE',
+    });
+  },
+};
+
+/**
+ * Chat API
+ */
+export const chatApi = {
+  /**
+   * Send a chat message to the AI assistant
+   */
+  sendMessage: async (data: ChatMessageRequest): Promise<ChatMessageResponse> => {
+    return apiFetch<ChatMessageResponse>('/api/chat', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   },
 };

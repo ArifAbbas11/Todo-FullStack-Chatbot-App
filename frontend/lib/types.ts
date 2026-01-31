@@ -20,6 +20,12 @@ export interface Task {
   is_completed: boolean;
   created_at: string;
   updated_at: string;
+  // AI Enhancement Fields
+  due_date: string | null;
+  priority: 'low' | 'medium' | 'high' | 'urgent' | null;
+  category: string | null;
+  tags: string[] | null;
+  parent_task_id: string | null;
 }
 
 // Authentication Types
@@ -88,4 +94,22 @@ export interface ApiResponse<T = any> {
     message: string;
     details?: Record<string, any>;
   };
+}
+
+// Chat Types
+export interface ChatMessageRequest {
+  message: string;
+  conversation_id?: string;
+}
+
+export interface ToolCall {
+  tool: string;
+  arguments: Record<string, any>;
+  result?: any;
+}
+
+export interface ChatMessageResponse {
+  response: string;
+  conversation_id: string;
+  tool_calls?: ToolCall[];
 }

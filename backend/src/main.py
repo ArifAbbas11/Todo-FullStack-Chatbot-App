@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.config import settings
 from src.core.database import create_db_and_tables
-from src.api import auth, tasks
+from src.api import auth, tasks, chat
 
 # Create FastAPI application instance
 app = FastAPI(
@@ -20,10 +20,14 @@ app = FastAPI(
 # Configure CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.FRONTEND_URL],  # Whitelist frontend origin
+    allow_origins=[
+        settings.FRONTEND_URL,
+        "http://localhost:3000",  # Local development
+        "https://todo-full-stack-app-tau.vercel.app"  # Production
+    ],
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 
@@ -66,3 +70,4 @@ async def root():
 # Register API routers
 app.include_router(auth.router, tags=["Authentication"])
 app.include_router(tasks.router, tags=["Tasks"])
+app.include_router(chat.router, tags=["Chat"])

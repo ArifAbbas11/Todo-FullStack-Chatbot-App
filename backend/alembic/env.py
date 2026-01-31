@@ -18,6 +18,8 @@ from src.core.config import settings
 # This is required for autogenerate to detect model changes
 from src.models.user import User
 from src.models.task import Task
+from src.models.conversation import Conversation
+from src.models.message import Message
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

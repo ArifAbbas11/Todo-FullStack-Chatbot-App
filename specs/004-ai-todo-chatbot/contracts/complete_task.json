@@ -1,0 +1,54 @@
+{
+  "name": "complete_task",
+  "description": "Mark a task as completed. The task must belong to the authenticated user. Completed tasks remain in the task list but are marked with is_completed=true.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "task_id": {
+        "type": "string",
+        "description": "UUID of the task to mark as complete (required)"
+      }
+    },
+    "required": ["task_id"]
+  },
+  "returns": {
+    "type": "object",
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "description": "Whether the task was marked as completed successfully"
+      },
+      "message": {
+        "type": "string",
+        "description": "Human-readable confirmation or error message"
+      }
+    }
+  },
+  "examples": [
+    {
+      "input": {
+        "task_id": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "output": {
+        "success": true,
+        "message": "Task marked as completed"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "condition": "Task ID not found or belongs to another user",
+      "response": {
+        "success": false,
+        "message": "Task not found"
+      }
+    },
+    {
+      "condition": "Task is already completed",
+      "response": {
+        "success": true,
+        "message": "Task is already completed"
+      }
+    }
+  ]
+}

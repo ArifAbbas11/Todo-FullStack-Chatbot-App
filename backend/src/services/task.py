@@ -55,7 +55,12 @@ def create_task(session: Session, user_id: UUID, request: CreateTaskRequest) -> 
         user_id=user_id,
         title=request.title.strip(),
         description=request.description.strip() if request.description else None,
-        is_completed=False  # Default to incomplete
+        is_completed=False,  # Default to incomplete
+        due_date=request.due_date,
+        priority=request.priority,
+        category=request.category,
+        tags=request.tags,
+        parent_task_id=request.parent_task_id
     )
 
     try:

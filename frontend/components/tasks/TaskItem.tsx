@@ -103,30 +103,83 @@ export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskIte
     }
   };
 
+  /**
+   * Format due date and determine status
+   */
+  const getDueDateInfo = (dueDateString: string | null) => {
+    if (!dueDateString) return null;
+
+    const dueDate = new Date(dueDateString);
+    const now = new Date();
+    const diffInMs = dueDate.getTime() - now.getTime();
+    const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+
+    let status: 'overdue' | 'soon' | 'future' = 'future';
+    let color = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
+
+    if (diffInDays < 0) {
+      status = 'overdue';
+      color = 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400';
+    } else if (diffInDays <= 3) {
+      status = 'soon';
+      color = 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400';
+    }
+
+    const formattedDate = dueDate.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: dueDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+    });
+
+    return { status, color, formattedDate, diffInDays };
+  };
+
+  /**
+   * Get priority color and emoji
+   */
+  const getPriorityInfo = (priority: string | null) => {
+    if (!priority) return null;
+
+    const priorityMap = {
+      urgent: { emoji: '🔴', color: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' },
+      high: { emoji: '🟠', color: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400' },
+      medium: { emoji: '🟡', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' },
+      low: { emoji: '🟢', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' },
+    };
+
+    return priorityMap[priority as keyof typeof priorityMap] || null;
+  };
+
+  const dueDateInfo = getDueDateInfo(task.due_date);
+  const priorityInfo = getPriorityInfo(task.priority);
+
   return (
     <>
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 sm:p-6 transition-all">
-      <div className="flex items-start gap-3 sm:gap-4">
-        {/* Completion Checkbox */}
+      <div className="group relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-4 sm:p-6 border border-gray-200/50 dark:border-gray-700/50 hover:border-blue-500/50">
+        {/* Gradient overlay on hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 dark:from-blue-500/10 dark:to-purple-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+        <div className="relative flex items-start gap-3 sm:gap-4">
+        {/* Completion Checkbox with animation */}
         <div className="flex-shrink-0 pt-1">
           <button
             type="button"
             onClick={handleToggle}
             disabled={isToggling}
-            className="w-6 h-6 rounded border-2 flex items-center justify-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[24px] min-h-[24px]"
-            style={{
-              borderColor: task.is_completed ? '#10b981' : '#d1d5db',
-              backgroundColor: task.is_completed ? '#10b981' : 'transparent',
-            }}
+            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[28px] min-h-[28px] ${
+              task.is_completed
+                ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg shadow-green-500/30 animate-bounce-scale'
+                : 'border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 hover:scale-110'
+            }`}
             aria-label={task.is_completed ? 'Mark as incomplete' : 'Mark as complete'}
           >
             {task.is_completed && (
               <svg
-                className="w-4 h-4 text-white"
+                className="w-5 h-5 text-white animate-checkmark"
                 fill="none"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
@@ -139,7 +192,7 @@ export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskIte
         {/* Task Content */}
         <div className="flex-1 min-w-0">
           <h3
-            className={`text-lg font-semibold mb-1 break-words ${
+            className={`text-lg font-semibold mb-1 break-words transition-colors ${
               task.is_completed
                 ? 'text-gray-500 dark:text-gray-400 line-through'
                 : 'text-gray-900 dark:text-white'
@@ -150,7 +203,7 @@ export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskIte
 
           {task.description && (
             <p
-              className={`text-sm mb-2 break-words whitespace-pre-wrap ${
+              className={`text-sm mb-3 break-words whitespace-pre-wrap ${
                 task.is_completed
                   ? 'text-gray-400 dark:text-gray-500'
                   : 'text-gray-600 dark:text-gray-300'
@@ -160,9 +213,58 @@ export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskIte
             </p>
           )}
 
+          {/* AI Enhancement Badges with modern design */}
+          {(dueDateInfo || priorityInfo || task.category || (task.tags && task.tags.length > 0)) && (
+            <div className="flex flex-wrap gap-2 mb-3">
+              {/* Due Date Badge */}
+              {dueDateInfo && (
+                <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm ${dueDateInfo.color}`}>
+                  <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  {dueDateInfo.formattedDate}
+                  {dueDateInfo.status === 'overdue' && ' (Overdue)'}
+                  {dueDateInfo.status === 'soon' && dueDateInfo.diffInDays === 0 && ' (Today)'}
+                  {dueDateInfo.status === 'soon' && dueDateInfo.diffInDays === 1 && ' (Tomorrow)'}
+                </span>
+              )}
+
+              {/* Priority Badge */}
+              {priorityInfo && (
+                <span className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm ${priorityInfo.color}`}>
+                  <span className="mr-1.5">{priorityInfo.emoji}</span>
+                  {task.priority?.charAt(0).toUpperCase()}{task.priority?.slice(1)}
+                </span>
+              )}
+
+              {/* Category Badge */}
+              {task.category && (
+                <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-blue-500/10 to-purple-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 dark:border-blue-400/20">
+                  <svg className="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  {task.category.charAt(0).toUpperCase()}{task.category.slice(1)}
+                </span>
+              )}
+
+              {/* Tags */}
+              {task.tags && task.tags.length > 0 && task.tags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700/50 dark:text-gray-300 border border-gray-200 dark:border-gray-600"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
             <time dateTime={task.created_at}>
-              Created {formatDate(task.created_at)}
+              {formatDate(task.created_at)}
             </time>
             {task.updated_at !== task.created_at && (
               <>
@@ -175,14 +277,14 @@ export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskIte
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex-shrink-0 flex gap-2">
+        {/* Action Buttons with modern design */}
+        <div className="flex-shrink-0 flex gap-1">
           {/* Edit Button */}
           <button
             type="button"
             onClick={() => setIsEditModalOpen(true)}
             disabled={isToggling}
-            className="p-2 text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded disabled:opacity-50 disabled:cursor-not-allowed min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="p-2.5 text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed min-w-[40px] min-h-[40px] flex items-center justify-center"
             aria-label="Edit task"
             title="Edit task"
           >
@@ -204,7 +306,7 @@ export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskIte
             type="button"
             onClick={() => setIsDeleteModalOpen(true)}
             disabled={isToggling}
-            className="p-2 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 rounded disabled:opacity-50 disabled:cursor-not-allowed min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="p-2.5 text-gray-600 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed min-w-[40px] min-h-[40px] flex items-center justify-center"
             aria-label="Delete task"
             title="Delete task"
           >
@@ -225,8 +327,13 @@ export default function TaskItem({ task, onTaskUpdated, onTaskDeleted }: TaskIte
 
       {/* Error Message */}
       {error && (
-        <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg backdrop-blur-sm">
+          <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {error}
+          </p>
         </div>
       )}
       </div>

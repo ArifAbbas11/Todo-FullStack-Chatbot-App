@@ -1,0 +1,76 @@
+{
+  "name": "create_task",
+  "description": "Create a new todo task for the authenticated user. The task will be associated with the user's account and can be listed, updated, completed, or deleted later.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "title": {
+        "type": "string",
+        "description": "The task title (required). Maximum 500 characters. Should be a clear, concise description of what needs to be done.",
+        "maxLength": 500
+      },
+      "description": {
+        "type": "string",
+        "description": "Optional detailed description of the task. Maximum 2000 characters. Can include additional context, notes, or instructions.",
+        "maxLength": 2000
+      }
+    },
+    "required": ["title"]
+  },
+  "returns": {
+    "type": "object",
+    "properties": {
+      "success": {
+        "type": "boolean",
+        "description": "Whether the task was created successfully"
+      },
+      "task_id": {
+        "type": "string",
+        "description": "UUID of the created task (only present if success=true)"
+      },
+      "message": {
+        "type": "string",
+        "description": "Human-readable confirmation or error message"
+      }
+    }
+  },
+  "examples": [
+    {
+      "input": {
+        "title": "Buy groceries"
+      },
+      "output": {
+        "success": true,
+        "task_id": "550e8400-e29b-41d4-a716-446655440000",
+        "message": "Task 'Buy groceries' created successfully"
+      }
+    },
+    {
+      "input": {
+        "title": "Call mom tomorrow at 3pm",
+        "description": "Discuss weekend plans and birthday gift ideas"
+      },
+      "output": {
+        "success": true,
+        "task_id": "123e4567-e89b-12d3-a456-426614174000",
+        "message": "Task 'Call mom tomorrow at 3pm' created successfully"
+      }
+    }
+  ],
+  "errors": [
+    {
+      "condition": "Title is empty or missing",
+      "response": {
+        "success": false,
+        "message": "Task title is required"
+      }
+    },
+    {
+      "condition": "Title exceeds 500 characters",
+      "response": {
+        "success": false,
+        "message": "Task title must be under 500 characters"
+      }
+    }
+  ]
+}
