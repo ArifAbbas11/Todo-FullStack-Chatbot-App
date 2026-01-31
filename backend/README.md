@@ -14,10 +14,10 @@ FastAPI backend for the Todo Full-Stack Chatbot App with AI-powered task managem
 
 ## 🚀 Live API
 
-- **API Base URL**: https://your-username-todo-backend-api.hf.space
-- **Swagger UI**: https://your-username-todo-backend-api.hf.space/docs
-- **ReDoc**: https://your-username-todo-backend-api.hf.space/redoc
-- **Health Check**: https://your-username-todo-backend-api.hf.space/health
+- **API Base URL**: https://ayeshamasood110-todo-backend-chatbot.hf.space
+- **Swagger UI**: https://ayeshamasood110-todo-backend-chatbot.hf.space/docs
+- **ReDoc**: https://ayeshamasood110-todo-backend-chatbot.hf.space/redoc
+- **Health Check**: https://ayeshamasood110-todo-backend-chatbot.hf.space/health
 
 ## ✨ Features
 
