@@ -84,6 +84,10 @@ export default function FloatingChatWidget() {
       }
 
       addMessage(response.response, 'assistant');
+
+      // Trigger task list refresh after chatbot operations
+      // This ensures the UI updates when tasks are created/completed/deleted via chatbot
+      window.dispatchEvent(new CustomEvent('taskListRefresh'));
     } catch (error) {
       console.error('Error sending message:', error);
       addMessage(

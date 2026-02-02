@@ -72,6 +72,19 @@ export default function TaskList({ refreshTrigger }: TaskListProps) {
     fetchTasks();
   }, [refreshTrigger]);
 
+  // Listen for chatbot task updates
+  useEffect(() => {
+    const handleChatbotRefresh = () => {
+      fetchTasks();
+    };
+
+    window.addEventListener('taskListRefresh', handleChatbotRefresh);
+
+    return () => {
+      window.removeEventListener('taskListRefresh', handleChatbotRefresh);
+    };
+  }, []);
+
   /**
    * Filter and search tasks
    */
