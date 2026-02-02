@@ -3,14 +3,5 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
-  "devCommand": "npm run dev",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://your-backend-api-url.com",
-    "BETTER_AUTH_SECRET": "@better-auth-secret"
-  },
-  "build": {
-    "env": {
-      "NEXT_PUBLIC_API_URL": "https://your-backend-api-url.com"
-    }
-  }
+  "devCommand": "npm run dev"
 }
