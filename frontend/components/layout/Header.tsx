@@ -24,9 +24,28 @@ export default function Header() {
     }
   }, []);
 
+  // Listen for authentication changes (login/logout)
+  useEffect(() => {
+    const handleAuthChange = () => {
+      if (isAuthenticated()) {
+        setUser(getAuthUser());
+      } else {
+        setUser(null);
+      }
+    };
+
+    window.addEventListener('authStateChanged', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('authStateChanged', handleAuthChange);
+    };
+  }, []);
+
   // Handle sign out
   const handleSignOut = () => {
     clearAuth();
+    // Trigger auth state change event
+    window.dispatchEvent(new CustomEvent('authStateChanged'));
     router.push('/signin');
   };
 

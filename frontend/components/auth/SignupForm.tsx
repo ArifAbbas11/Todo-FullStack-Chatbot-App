@@ -74,6 +74,9 @@ export default function SignupForm() {
       // Store token and user data
       setAuthToken(response.data.token, response.data.user);
 
+      // Trigger auth state change event to update Header
+      window.dispatchEvent(new CustomEvent('authStateChanged'));
+
       // Redirect to tasks page
       router.push('/tasks');
     } catch (error) {
