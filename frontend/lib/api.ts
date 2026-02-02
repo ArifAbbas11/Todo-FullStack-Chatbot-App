@@ -97,9 +97,15 @@ async function apiFetch<T>(
 
     // Handle error responses
     if (!response.ok) {
-      const errorMessage = data?.error?.message || data?.detail || 'An error occurred';
-      const errorCode = data?.error?.code || 'UNKNOWN_ERROR';
-      const errorDetails = data?.error?.details || {};
+      // Backend returns detail as object: {code, message, details}
+      // Extract message from nested structure
+      const errorMessage =
+        data?.error?.message ||
+        data?.detail?.message ||
+        (typeof data?.detail === 'string' ? data?.detail : null) ||
+        'An error occurred';
+      const errorCode = data?.error?.code || data?.detail?.code || 'UNKNOWN_ERROR';
+      const errorDetails = data?.error?.details || data?.detail?.details || {};
 
       // Handle 401 Unauthorized responses
       if (response.status === 401) {
