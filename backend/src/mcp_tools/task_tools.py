@@ -50,6 +50,16 @@ class DeleteTaskInput(BaseModel):
     )
 
 
+class UpdateTaskInput(BaseModel):
+    """Input schema for updating a task"""
+    task_identifier: str = Field(
+        ...,
+        description="Either the task number (e.g., '1', '2') or the task title/partial title to search for"
+    )
+    new_title: str | None = Field(None, description="New title for the task")
+    new_description: str | None = Field(None, description="New description for the task")
+
+
 # MCP Tool Definitions
 # These are the tools that the LLM can call
 TASK_TOOLS: List[Dict[str, Any]] = [
@@ -138,6 +148,31 @@ TASK_TOOLS: List[Dict[str, Any]] = [
                     "task_identifier": {
                         "type": "string",
                         "description": "Either the task number (e.g., '1', '2') or the task title/partial title to search for"
+                    }
+                },
+                "required": ["task_identifier"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "update_task",
+            "description": "Update a task's title and/or description. Use this when the user wants to edit, modify, change, or update an existing task. The task_identifier can be a task number (1, 2, 3) or a task title/partial title.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "task_identifier": {
+                        "type": "string",
+                        "description": "Either the task number (e.g., '1', '2') or the task title/partial title to search for"
+                    },
+                    "new_title": {
+                        "type": "string",
+                        "description": "New title for the task (optional if only updating description)"
+                    },
+                    "new_description": {
+                        "type": "string",
+                        "description": "New description for the task (optional if only updating title)"
                     }
                 },
                 "required": ["task_identifier"]

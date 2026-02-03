@@ -13,8 +13,8 @@ from groq import Groq
 from sqlmodel import Session
 
 from src.mcp_tools.task_tools import TASK_TOOLS
-from src.services.task import create_task, get_user_tasks, toggle_task_completion, delete_task
-from src.schemas.task import CreateTaskRequest
+from src.services.task import create_task, get_user_tasks, toggle_task_completion, delete_task, update_task
+from src.schemas.task import CreateTaskRequest, UpdateTaskRequest
 from src.services.ai_enhancements import (
     parse_natural_language_date,
     extract_date_from_task_text,
@@ -275,6 +275,96 @@ def execute_tool(
                         "error": f"I couldn't find a task matching '{task_identifier}'."
                     }
 
+        elif tool_name == "update_task":
+            task_identifier = tool_args.get("task_identifier", "").strip()
+            new_title = tool_args.get("new_title")
+            new_description = tool_args.get("new_description")
+
+            # Validate that at least one field is being updated
+            if not new_title and not new_description:
+                return {
+                    "success": False,
+                    "error": "Please provide either a new title or new description to update."
+                }
+
+            tasks = get_user_tasks(session, user_id)
+
+            if not tasks:
+                return {
+                    "success": False,
+                    "error": "You don't have any tasks to update."
+                }
+
+            # Try to parse as task number
+            try:
+                task_number = int(task_identifier)
+                if 1 <= task_number <= len(tasks):
+                    task = tasks[task_number - 1]
+
+                    # Prepare update request
+                    update_request = UpdateTaskRequest(
+                        title=new_title if new_title else task.title,
+                        description=new_description if new_description else task.description
+                    )
+
+                    updated_task = update_task(session, task.id, user_id, update_request)
+
+                    result = f"✏️ Task updated successfully!\n\n"
+                    result += f"Title: {updated_task.title}\n"
+                    if updated_task.description:
+                        result += f"Description: {updated_task.description}\n"
+
+                    return {
+                        "success": True,
+                        "result": result
+                    }
+                else:
+                    return {
+                        "success": False,
+                        "error": f"Task number {task_number} doesn't exist. You have {len(tasks)} tasks."
+                    }
+            except ValueError:
+                # Not a number, search by title
+                search_term = task_identifier.lower()
+                matching_tasks = [t for t in tasks if search_term in t.title.lower()]
+
+                if len(matching_tasks) == 1:
+                    task = matching_tasks[0]
+
+                    # Prepare update request
+                    update_request = UpdateTaskRequest(
+                        title=new_title if new_title else task.title,
+                        description=new_description if new_description else task.description
+                    )
+
+                    updated_task = update_task(session, task.id, user_id, update_request)
+
+                    result = f"✏️ Task updated successfully!\n\n"
+                    result += f"Title: {updated_task.title}\n"
+                    if updated_task.description:
+                        result += f"Description: {updated_task.description}\n"
+
+                    return {
+                        "success": True,
+                        "result": result
+                    }
+                elif len(matching_tasks) > 1:
+                    result = f"I found {len(matching_tasks)} tasks matching '{task_identifier}':\n\n"
+                    for task in matching_tasks:
+                        status = "✅" if task.is_completed else "⭕"
+                        task_idx = tasks.index(task) + 1
+                        result += f"{task_idx}. {status} {task.title}\n"
+                    result += f"\nPlease specify the task number. For example: 'Update task {tasks.index(matching_tasks[0]) + 1}'"
+                    return {
+                        "success": False,
+                        "error": result
+                    }
+                else:
+                    return {
+                        "success": False,
+                        "error": f"I couldn't find a task matching '{task_identifier}'."
+                    }
+
         elif tool_name == "delete_all_tasks":
             tasks = get_user_tasks(session, user_id)
 
@@ -409,6 +499,7 @@ def process_message(
 Core Features:
 - Create new tasks with AI-enhanced features
 - List all their tasks
+- Update existing tasks (title and/or description)
 - Complete/toggle tasks
 - Delete tasks
 
@@ -436,13 +527,16 @@ Guidelines:
 - Provide productivity insights when users ask about their progress or stats
 - Always confirm actions and provide clear feedback about what was done
 - When users refer to tasks by name or description, you can search for them. When they use numbers, treat those as task positions in the list.
+- When users want to UPDATE a task (change title, edit description, modify), use the update_task tool, NOT create_task
 
 Examples:
 - User: "Create task to submit report by Friday" → Extract "Friday" as due date, suggest priority
 - User: "Add task to buy groceries" → Auto-categorize as "shopping"
 - User: "Plan wedding" → Offer to suggest subtasks
 - User: "Show my stats" → Display productivity insights with completion rate, categories, priorities
-- User: "List all my tasks" → Show ALL tasks exactly as returned by the list_tasks tool, without filtering"""
+- User: "List all my tasks" → Show ALL tasks exactly as returned by the list_tasks tool, without filtering
+- User: "Update task 1 title to 'Complete project report'" → Use update_task tool to modify the existing task
+- User: "Change the description of 'buy groceries' to 'milk, bread, eggs'" → Use update_task tool"""
         })
 
         # Add conversation history (last 10 messages to keep context manageable)
